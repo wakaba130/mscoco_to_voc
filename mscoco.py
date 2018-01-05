@@ -7,8 +7,28 @@ import cv2
 import os
 import create_xml
 import argparse
+from progressbar import ProgressBar
 
-#select_categories = []
+voc_bbox_label_names = ('aeroplane',
+                        'bicycle',
+                        'bird',
+                        'boat',
+                        'bottle',
+                        'bus',
+                        'car',
+                        'cat',
+                        'chair',
+                        'cow',
+                        'diningtable',
+                        'dog',
+                        'horse',
+                        'motorbike',
+                        'person',
+                        'pottedplant',
+                        'sheep',
+                        'sofa',
+                        'train',
+                        'tvmonitor')
 
 def argparser():
     parser = argparse.ArgumentParser()
@@ -30,12 +50,21 @@ def argparser():
 
     return args
 
-# select category name
+# get category name
 def category(categories,category_id):
     cate = None
-    for c in categories:
-        if c['id'] == category_id:
-            cate = c['name']
+    cate_buf = [c for c in categories if c['id'] == category_id]
+    if len(cate_buf) > 0:
+        cate = cate_buf[0]['name']
+    return cate
+
+# select category name
+def select_category(categories, category_id):
+    cate = None
+    cate_buf = [c for c in categories if c['id'] == category_id]
+    if len(cate_buf) > 0:
+        if cate_buf[0]['name'] in voc_bbox_label_names:
+            cate = cate_buf[0]
     return cate
 
 # draw rectangle and annotation name
@@ -63,11 +92,13 @@ def main():
 
     args = argparser()
 
+    print('-- loading annotation json --')
     with open(args.anno_json,'r') as fp:
         json_s = json.load(fp)
 
     categories = json_s['categories']
 
+    print('-- create index list --')
     image_id_list_buf = []
     for name in json_s['annotations']:
         id = int(name['image_id'])
@@ -80,28 +111,34 @@ def main():
     if args.view == 'on':
         cv2.namedWindow('img',cv2.WINDOW_AUTOSIZE)
 
+    bar = ProgressBar(0,len(image_id_list)-1)
+
+    print('-- output xmls --')
+    count = 0
     for id in image_id_list:
-        cnt = 0
         rect_list = []
         label_list = []
         for name in json_s['annotations']:
             if id == int(name['image_id']):
-                rect_list.append({'id':id, 'category_id':name['category_id'],'rect':name['bbox']})
-                cate = category(categories,name['category_id'])
-                label_list.append(create_xml.LABEL(cate, 'None', 0, 0, name['bbox']))
-                cnt += 1
+                #cate = category(categories,name['category_id'])
+                cate = select_category(categories,name['category_id'])
+                if cate is not None:
+                    rect_list.append({'id': id, 'category_id': name['category_id'], 'rect': name['bbox']})
+                    label_list.append(create_xml.LABEL(cate, 'None', 0, 0, name['bbox']))
 
-        print('id {:012d} cnt : {:03d}'.format(id,cnt))
+        bar.update(count)
+        count += 1
 
-        xml_name = '{}/COCO_train2014_{:012d}.xml'.format(args.output_dir, id)
-        create_xml.create_pascalVOC(label_list,xml_name)
+        if len(label_list) > 0:
+            xml_name = '{}/COCO_train2014_{:012d}.xml'.format(args.output_dir, id)
+            create_xml.create_pascalVOC(label_list,xml_name)
 
-        if args.view == 'on':
-            img_name = '{}/COCO_train2014_{:012d}.jpg'.format(args.images_dir, id)
-            img = view_annotation(img_name,rect_list,categories)
-            cv2.imshow('img',img)
-            if cv2.waitKey(30) == 27:
-                break
+            if args.view == 'on':
+                img_name = '{}/COCO_train2014_{:012d}.jpg'.format(args.images_dir, id)
+                img = view_annotation(img_name,rect_list,categories)
+                cv2.imshow('img',img)
+                if cv2.waitKey(30) == 27:
+                    break
 
     if args.view == 'on':
         cv2.destroyAllWindows()
