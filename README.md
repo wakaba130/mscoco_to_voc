@@ -2,7 +2,7 @@
 
 ## Description
 
-mscocoのデータセットのアノテーションのフォーマット（.json）をPascal VOCのデータセットのフォーマット（.xml）に変換するコード
+mscocoのデータセットのアノテーションのフォーマット（.json）をChainerCV用のPascal VOCのデータセットのフォーマット（.xml）に変換するコード
 
 ## Execution environment
 
