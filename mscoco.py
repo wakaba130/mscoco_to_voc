@@ -36,6 +36,8 @@ def argparser():
     parser.add_argument('images_dir',type=str)
     parser.add_argument('output_dir',type=str)
     parser.add_argument('--view', choices=('on', 'off'), default='off')
+    parser.add_argument('--out_voc_dir',choices=('VOC2007','VOC2012'), default='VOC2007')
+    #parser.add_argument('--area',type=int,default=-1) #add annotation rect threshold
     args = parser.parse_args()
 
     if os.path.isdir(args.output_dir):
@@ -64,16 +66,11 @@ def select_category(categories, category_id):
     cate_buf = [c for c in categories if c['id'] == category_id]
     if len(cate_buf) > 0:
         if cate_buf[0]['name'] in voc_bbox_label_names:
-            cate = cate_buf[0]
+            cate = cate_buf[0]['name']
     return cate
 
 # draw rectangle and annotation name
-def view_annotation(img_name,rect_list,categories):
-    if not os.path.isfile(img_name):
-        return None
-
-    img = cv2.imread(img_name)
-
+def view_annotation(img,rect_list,categories):
     for rec in rect_list:
         x = int(rec['rect'][0])
         y = int(rec['rect'][1])
@@ -124,21 +121,31 @@ def main():
                 cate = select_category(categories,name['category_id'])
                 if cate is not None:
                     rect_list.append({'id': id, 'category_id': name['category_id'], 'rect': name['bbox']})
-                    label_list.append(create_xml.LABEL(cate, 'None', 0, 0, name['bbox']))
+                    label_list.append(create_xml.LABEL(cate, 'Unspecified', 0, 0, name['bbox']))
 
         bar.update(count)
         count += 1
 
         if len(label_list) > 0:
-            xml_name = '{}/COCO_train2014_{:012d}.xml'.format(args.output_dir, id)
-            create_xml.create_pascalVOC(label_list,xml_name)
+            sp_dir = args.images_dir.split('/')
+            sp_dir_name = sp_dir[len(sp_dir) - 1]
 
-            if args.view == 'on':
-                img_name = '{}/COCO_train2014_{:012d}.jpg'.format(args.images_dir, id)
-                img = view_annotation(img_name,rect_list,categories)
-                cv2.imshow('img',img)
-                if cv2.waitKey(30) == 27:
-                    break
+            img_name = '{}/COCO_{}_{:012d}.jpg'.format(args.images_dir, sp_dir_name, id)
+            sp_img_name = os.path.split(img_name)
+
+            if os.path.isfile(img_name):
+                img = cv2.imread(img_name)
+                h,w,c = img.shape
+                img_size = create_xml.IMAGE_SIZE(w,h,c)
+
+                xml_name = '{}/COCO_{}_{:012d}.xml'.format(args.output_dir, sp_dir_name, id)
+                create_xml.create_pascalVOC(sp_dir_name,sp_img_name[1],img_size,label_list,xml_name)
+
+                if args.view == 'on':
+                    vimg = view_annotation(img,rect_list,categories)
+                    cv2.imshow('img',vimg)
+                    if cv2.waitKey(30) == 27:
+                        break
 
     if args.view == 'on':
         cv2.destroyAllWindows()
