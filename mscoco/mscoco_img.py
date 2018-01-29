@@ -12,6 +12,7 @@ import argparse
 def argparser():
     parser = argparse.ArgumentParser()
     parser.add_argument('images_dir', type=str)
+    parser.add_argument('annotation_dir', type=str)
     parser.add_argument('output_dir', type=str)
     args = parser.parse_args()
 

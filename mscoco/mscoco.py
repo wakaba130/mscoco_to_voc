@@ -5,7 +5,8 @@
 import json
 import cv2
 import os
-import create_xml
+import shutil
+import mscoco.create_xml as c_xml
 import argparse
 from progressbar import ProgressBar
 
@@ -32,19 +33,23 @@ voc_bbox_label_names = ('aeroplane',
 
 def argparser():
     parser = argparse.ArgumentParser()
+    parser.add_argument('sets', choices=['train', 'trainval', 'test', 'val'])
     parser.add_argument('anno_json',type=str)
     parser.add_argument('images_dir',type=str)
-    parser.add_argument('output_dir',type=str)
+    parser.add_argument('output_ano_dir',type=str)
+    parser.add_argument('output_img_dir',type=str)
+    parser.add_argument('output_set_dir', type=str)
     parser.add_argument('--view', choices=('on', 'off'), default='off')
     parser.add_argument('--out_voc_dir',choices=('VOC2007','VOC2012'), default='VOC2007')
     #parser.add_argument('--area',type=int,default=-1) #add annotation rect threshold
     args = parser.parse_args()
 
-    if os.path.isdir(args.output_dir):
-        print('argparser error : output_dir is exist.')
-        exit()
-    else:
-        os.mkdir(args.output_dir)
+    if not os.path.isdir(args.output_ano_dir):
+        os.mkdir(args.output_ano_dir)
+    if not os.path.isdir(args.output_img_dir):
+        os.mkdir(args.output_img_dir)
+    if not os.path.isdir(args.output_set_dir):
+        os.mkdir(args.output_set_dir)
 
     if not os.path.isfile(args.anno_json):
         print('argparser error : annotation json is not exist.')
@@ -110,8 +115,9 @@ def main():
 
     bar = ProgressBar(0,len(image_id_list)-1)
 
-    print('-- output xmls --')
+    print('-- output xmls jpgs txts --')
     count = 0
+    name_list = []
     for id in image_id_list:
         rect_list = []
         label_list = []
@@ -121,7 +127,7 @@ def main():
                 cate = select_category(categories,name['category_id'])
                 if cate is not None:
                     rect_list.append({'id': id, 'category_id': name['category_id'], 'rect': name['bbox']})
-                    label_list.append(create_xml.LABEL(cate, 'Unspecified', 0, 0, name['bbox']))
+                    label_list.append(c_xml.LABEL(cate, 'Unspecified', 0, 0, name['bbox']))
 
         bar.update(count)
         count += 1
@@ -130,22 +136,39 @@ def main():
             sp_dir = args.images_dir.split('/')
             sp_dir_name = sp_dir[len(sp_dir) - 1]
 
-            img_name = '{}/COCO_{}_{:012d}.jpg'.format(args.images_dir, sp_dir_name, id)
+            base_name = 'COCO_{}_{:012d}'.format(sp_dir_name, id)
+            jpg_name = '{}.jpg'.format(base_name)
+            img_name = '{}/{}'.format(args.images_dir,jpg_name)
             sp_img_name = os.path.split(img_name)
+
+            if not os.path.isfile(img_name):
+                print('Error JPGIamge {} is not exist.'.format(img_name))
+                exit()
 
             if os.path.isfile(img_name):
                 img = cv2.imread(img_name)
                 h,w,c = img.shape
-                img_size = create_xml.IMAGE_SIZE(w,h,c)
+                img_size = c_xml.IMAGE_SIZE(w,h,c)
 
-                xml_name = '{}/COCO_{}_{:012d}.xml'.format(args.output_dir, sp_dir_name, id)
-                create_xml.create_pascalVOC(sp_dir_name,sp_img_name[1],img_size,label_list,xml_name)
+                # create xml
+                xml_name = '{}/{}.xml'.format(args.output_ano_dir, base_name)
+                c_xml.create_pascalVOC(sp_dir_name,sp_img_name[1],img_size,label_list,xml_name)
+
+                # copy jpg image
+                shutil.copyfile(img_name,'{}/{}'.format(args.output_img_dir, jpg_name))
+
+                # add name_list
+                name_list.append(base_name)
 
                 if args.view == 'on':
                     vimg = view_annotation(img,rect_list,categories)
                     cv2.imshow('img',vimg)
                     if cv2.waitKey(30) == 27:
                         break
+
+    with open('{}/{}.txt'.format(args.output_set_dir,args.sets)) as fp:
+        for n in name_list:
+            fp.write('{}\n'.format(n))
 
     if args.view == 'on':
         cv2.destroyAllWindows()
