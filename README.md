@@ -15,10 +15,12 @@ mscocoのデータセットのアノテーションのフォーマット（.json
 ## Execution method
 
 ```bash
-python3 mscoco.py [annotation_json_file] [images_dir] [output_dir] --view [on/off]
+python3 -m mscoco.mscoco [--view {on,off}] [--out_voc_dir {VOC2007,VOC2012}] [{train,trainval,test,val}] [anno_json] [images_dir] [output_dir]
 ```
 
-+ annotation_json_file
-+ images_dir
-+ output_dir
-+ [option] view 
++ [--view {on,off}]
++ [--out_voc_dir {VOC2007,VOC2012}]
++ [{train,trainval,test,val}]
++ [anno_json]
++ [images_dir]
++ [output_dir]
