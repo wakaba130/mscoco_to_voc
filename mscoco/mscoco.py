@@ -10,6 +10,12 @@ import mscoco.create_xml as c_xml
 import argparse
 from progressbar import ProgressBar
 
+annotations_dir = 'Annotations'
+ImageSet_dir = 'ImageSets'
+ImageSet_Layout = 'Layout'
+ImageSet_Main = 'Main'
+JPEGImages_dir = 'JPEGImages'
+
 voc_bbox_label_names = ('aeroplane',
                         'bicycle',
                         'bird',
@@ -36,20 +42,21 @@ def argparser():
     parser.add_argument('sets', choices=['train', 'trainval', 'test', 'val'])
     parser.add_argument('anno_json',type=str)
     parser.add_argument('images_dir',type=str)
-    parser.add_argument('output_ano_dir',type=str)
-    parser.add_argument('output_img_dir',type=str)
-    parser.add_argument('output_set_dir', type=str)
+    parser.add_argument('output_dir', type=str)
     parser.add_argument('--view', choices=('on', 'off'), default='off')
     parser.add_argument('--out_voc_dir',choices=('VOC2007','VOC2012'), default='VOC2007')
     #parser.add_argument('--area',type=int,default=-1) #add annotation rect threshold
     args = parser.parse_args()
 
-    if not os.path.isdir(args.output_ano_dir):
-        os.mkdir(args.output_ano_dir)
-    if not os.path.isdir(args.output_img_dir):
-        os.mkdir(args.output_img_dir)
-    if not os.path.isdir(args.output_set_dir):
-        os.mkdir(args.output_set_dir)
+    if not os.path.isdir(args.output_dir):
+        os.makedirs('{}'.format(args.output_dir))
+        os.mkdir('{}/{}'.format(args.output_dir, annotations_dir))
+        os.makedirs('{}/{}/{}'.format(args.output_dir, ImageSet_dir, ImageSet_Main))
+        os.makedirs('{}/{}/{}'.format(args.output_dir, ImageSet_dir, ImageSet_Layout))
+        os.mkdir('{}/{}'.format(args.output_dir, JPEGImages_dir))
+    else:
+        print('Error : output_dir is exist.')
+        exit()
 
     if not os.path.isfile(args.anno_json):
         print('argparser error : annotation json is not exist.')
@@ -73,6 +80,8 @@ def select_category(categories, category_id):
         if cate_buf[0]['name'] in voc_bbox_label_names:
             cate = cate_buf[0]['name']
     return cate
+
+#def select_rect():
 
 # draw rectangle and annotation name
 def view_annotation(img,rect_list,categories):
@@ -151,11 +160,11 @@ def main():
                 img_size = c_xml.IMAGE_SIZE(w,h,c)
 
                 # create xml
-                xml_name = '{}/{}.xml'.format(args.output_ano_dir, base_name)
+                xml_name = '{}/{}/{}.xml'.format(args.output_dir, annotations_dir, base_name)
                 c_xml.create_pascalVOC(sp_dir_name,sp_img_name[1],img_size,label_list,xml_name)
 
                 # copy jpg image
-                shutil.copyfile(img_name,'{}/{}'.format(args.output_img_dir, jpg_name))
+                shutil.copyfile(img_name,'{}/{}/{}'.format(args.output_dir, JPEGImages_dir, jpg_name))
 
                 # add name_list
                 name_list.append(base_name)
@@ -166,7 +175,7 @@ def main():
                     if cv2.waitKey(30) == 27:
                         break
 
-    with open('{}/{}.txt'.format(args.output_set_dir,args.sets)) as fp:
+    with open('{}/{}/{}/{}.txt'.format(args.output_dir, ImageSet_dir, ImageSet_Main, args.sets),'w') as fp:
         for n in name_list:
             fp.write('{}\n'.format(n))
 
