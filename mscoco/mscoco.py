@@ -48,20 +48,6 @@ def argparser():
     #parser.add_argument('--area',type=int,default=-1) #add annotation rect threshold
     args = parser.parse_args()
 
-    if not os.path.isdir(args.output_dir):
-        os.makedirs('{}'.format(args.output_dir))
-        os.mkdir('{}/{}'.format(args.output_dir, annotations_dir))
-        os.makedirs('{}/{}/{}'.format(args.output_dir, ImageSet_dir, ImageSet_Main))
-        os.makedirs('{}/{}/{}'.format(args.output_dir, ImageSet_dir, ImageSet_Layout))
-        os.mkdir('{}/{}'.format(args.output_dir, JPEGImages_dir))
-    else:
-        print('Error : output_dir is exist.')
-        exit()
-
-    if not os.path.isfile(args.anno_json):
-        print('argparser error : annotation json is not exist.')
-        exit()
-
     return args
 
 # get category name
@@ -98,13 +84,22 @@ def view_annotation(img,rect_list,categories):
 
     return img
 
-def main():
-    print('__mscoco_to_PascalVOC__')
+def mscoco_to_voc(anno_json, img_dir, out_dir, sets, view='off'):
+    print('-- check directry --')
 
-    args = argparser()
+    if not os.path.isdir(out_dir):
+        os.makedirs('{}'.format(out_dir))
+        os.mkdir('{}/{}'.format(out_dir, annotations_dir))
+        os.makedirs('{}/{}/{}'.format(out_dir, ImageSet_dir, ImageSet_Main))
+        os.makedirs('{}/{}/{}'.format(out_dir, ImageSet_dir, ImageSet_Layout))
+        os.mkdir('{}/{}'.format(out_dir, JPEGImages_dir))
+
+    if not os.path.isfile(anno_json):
+        print('argparser error : annotation json is not exist.')
+        exit()
 
     print('-- loading annotation json --')
-    with open(args.anno_json,'r') as fp:
+    with open(anno_json, 'r') as fp:
         json_s = json.load(fp)
 
     categories = json_s['categories']
@@ -119,12 +114,12 @@ def main():
     image_id_list.sort()
     del image_id_list_buf
 
-    if args.view == 'on':
-        cv2.namedWindow('img',cv2.WINDOW_AUTOSIZE)
+    if view == 'on':
+        cv2.namedWindow('img', cv2.WINDOW_AUTOSIZE)
 
-    bar = ProgressBar(0,len(image_id_list)-1)
+    bar = ProgressBar(0, len(image_id_list) - 1)
 
-    print('-- output xmls jpgs txts --')
+    print('-- output xmls jpgs and imagesets --')
     count = 0
     name_list = []
     for id in image_id_list:
@@ -132,8 +127,8 @@ def main():
         label_list = []
         for name in json_s['annotations']:
             if id == int(name['image_id']):
-                #cate = category(categories,name['category_id'])
-                cate = select_category(categories,name['category_id'])
+                # cate = category(categories,name['category_id'])
+                cate = select_category(categories, name['category_id'])
                 if cate is not None:
                     rect_list.append({'id': id, 'category_id': name['category_id'], 'rect': name['bbox']})
                     label_list.append(c_xml.LABEL(cate, 'Unspecified', 0, 0, name['bbox']))
@@ -142,12 +137,12 @@ def main():
         count += 1
 
         if len(label_list) > 0:
-            sp_dir = args.images_dir.split('/')
+            sp_dir = img_dir.split('/')
             sp_dir_name = sp_dir[len(sp_dir) - 1]
 
             base_name = 'COCO_{}_{:012d}'.format(sp_dir_name, id)
             jpg_name = '{}.jpg'.format(base_name)
-            img_name = '{}/{}'.format(args.images_dir,jpg_name)
+            img_name = '{}/{}'.format(img_dir, jpg_name)
             sp_img_name = os.path.split(img_name)
 
             if not os.path.isfile(img_name):
@@ -156,31 +151,37 @@ def main():
 
             if os.path.isfile(img_name):
                 img = cv2.imread(img_name)
-                h,w,c = img.shape
-                img_size = c_xml.IMAGE_SIZE(w,h,c)
+                h, w, c = img.shape
+                img_size = c_xml.IMAGE_SIZE(w, h, c)
 
                 # create xml
-                xml_name = '{}/{}/{}.xml'.format(args.output_dir, annotations_dir, base_name)
-                c_xml.create_pascalVOC(sp_dir_name,sp_img_name[1],img_size,label_list,xml_name)
+                xml_name = '{}/{}/{}.xml'.format(out_dir, annotations_dir, base_name)
+                c_xml.create_pascalVOC(sp_dir_name, sp_img_name[1], img_size, label_list, xml_name)
 
                 # copy jpg image
-                shutil.copyfile(img_name,'{}/{}/{}'.format(args.output_dir, JPEGImages_dir, jpg_name))
+                shutil.copyfile(img_name, '{}/{}/{}'.format(out_dir, JPEGImages_dir, jpg_name))
 
                 # add name_list
                 name_list.append(base_name)
 
-                if args.view == 'on':
-                    vimg = view_annotation(img,rect_list,categories)
-                    cv2.imshow('img',vimg)
+                if view == 'on':
+                    vimg = view_annotation(img, rect_list, categories)
+                    cv2.imshow('img', vimg)
                     if cv2.waitKey(30) == 27:
                         break
 
-    with open('{}/{}/{}/{}.txt'.format(args.output_dir, ImageSet_dir, ImageSet_Main, args.sets),'w') as fp:
+    with open('{}/{}/{}/{}.txt'.format(out_dir, ImageSet_dir, ImageSet_Main, sets), 'w') as fp:
         for n in name_list:
             fp.write('{}\n'.format(n))
 
-    if args.view == 'on':
+    if view == 'on':
         cv2.destroyAllWindows()
+
+def main():
+    print('__mscoco_to_PascalVOC__')
+    args = argparser()
+
+    mscoco_to_voc(args.anno_json, args.images_dir, args.output_dir, args.sets, args.view)
 
 if __name__ == '__main__':
     main()

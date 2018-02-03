@@ -3,38 +3,81 @@
 ##
 
 import os
+import sys
 import subprocess
+from mscoco import mscoco
 
-input_dir = '/home/wakaba/mscoco'
-input_anno = '/home/wakaba/mscoco/annotations/instances_train2014.json'
-input_img_dir = '/home/wakaba/mscoco/images/train2014'
+year = '2014'
+input_dir = '/home/wakaba/mscoco2'
+output_dir = '/home/wakaba/output_test_dir'
 
-output_dir = './output'
-main_output_dir = 'VOCdevkit'
-sub_output_dir = 'VOC2007'
-annotations_dir = 'Annotations'
-ImageSet_dir = 'ImageSets'
-ImageSet_Layout = 'Layout'
-ImageSet_Main = 'Main'
-JPEGImages_dir = 'JPEGImages'
+train_2014_url = 'http://images.cocodataset.org/zips/train2014.zip'
+val_2014_url = 'http://images.cocodataset.org/zips/val2014.zip'
 
+train_2017_url = 'http://images.cocodataset.org/zips/train2017.zip'
+val_2017_url = 'http://images.cocodataset.org/zips/val2017.zip'
+
+anno_2014_url = 'http://images.cocodataset.org/annotations/annotations_trainval2014.zip'
+anno_2017_url = 'http://images.cocodataset.org/annotations/annotations_trainval2017.zip'
+
+###
+annotations = 'annotations'
+images = 'images'
+
+def check_dataset(input_path):
+    # check dataset dir
+    if not os.path.isdir('{}'.format(input_path)):
+        os.makedirs(input_path)
+
+    # check annotation file
+    if not os.path.isfile('{}/{}/instances_train{}.json'.format(input_path, annotations, year)):
+        if year == '2014':
+            subprocess.check_call(['wget', '-c', anno_2014_url], cwd=input_path)
+        else:
+            subprocess.check_call(['wget', '-c', anno_2017_url], cwd=input_path)
+
+        subprocess.check_call(['unzip', '{}/annotations_trainval{}.zip'.format(input_path, year)],
+                              cwd=input_dir)
+
+    # check train data
+    if not os.path.isdir('{}/{}/train{}'.format(input_path, images, year)):
+        if not os.path.isdir('{}/{}'.format(input_path, images)):
+            os.mkdir('{}/{}'.format(input_path, images))
+
+        if year == '2014':
+            subprocess.check_call(['wget', '-c', train_2014_url], cwd=input_path)
+        else:
+            subprocess.check_call(['wget', '-c', train_2017_url], cwd=input_path)
+
+        subprocess.check_call(
+            ['unzip', '{}/train{}.zip'.format(input_path, year)],
+            cwd='{}/{}'.format(input_path, images))
+
+    # check val data
+    if not os.path.isdir('{}/{}/val{}'.format(input_path, images, year)):
+        if year == '2014':
+            subprocess.check_call(['wget', '-c', val_2014_url], cwd=input_path)
+        else:
+            subprocess.check_call(['wget', '-c', val_2017_url], cwd=input_path)
+
+        subprocess.check_call(
+            ['unzip', '{}/val{}.zip'.format(input_path, year)],
+            cwd='{}/{}'.format(input_path, images))
 
 def main():
-    print('mscoco_to_voc')
+    print('test')
 
-    sub_path = '{}/{}/{}'.format(output_dir, main_output_dir, sub_output_dir)
-    if not os.path.isdir(output_dir):
-        os.makedirs(sub_path)
-        #os.mkdir('{}/{}'.format(sub_path,annotations_dir))
-        os.mkdir('{}/{}'.format(sub_path,ImageSet_dir))
-        os.mkdir('{}/{}/{}'.format(sub_path, ImageSet_dir, ImageSet_Layout))
-        os.mkdir('{}/{}/{}'.format(sub_path, ImageSet_dir, ImageSet_Main))
-        os.mkdir('{}/{}'.format(sub_path,JPEGImages_dir))
-    else:
-        print('Error main : output_dir is exist.')
-        exit()
+    if os.path.isdir(output_dir):
+        print('Error : output dir is exist.')
+        sys.exit()
 
-    subprocess.check_call(['python3', 'mscoco/mscoco.py', input_anno, input_img_dir, '{}/{}'.format(sub_path,annotations_dir)])
+    check_dataset(input_dir)
+
+    for set in ['train', 'val']:
+        print('== output {} =='.format(set))
+        anno = '{}/{}/instances_{}{}.json'.format(input_dir, annotations, set, year)
+        img = '{}/{}/{}{}'.format(input_dir, images, set, year)
+        mscoco.mscoco_to_voc(anno,img,output_dir,set)
 
 if __name__ == '__main__':
     main()

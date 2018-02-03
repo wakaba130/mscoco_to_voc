@@ -12,6 +12,12 @@ mscocoのデータセットのアノテーションのフォーマット（.json
 + progressbar2
   + if you install `sudo pip3 install progressbar2`
 
+## install apt
+
+```
+sudo apt-get install wget unzip
+```
+
 ## Execution method
 
 ```bash
