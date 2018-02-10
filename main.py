@@ -25,13 +25,19 @@ images = 'images'
 def argparser():
     this_dir = os.path.dirname(os.path.abspath(__file__))
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_dir',type=str,default='{}/input_dir'.format(this_dir))
-    parser.add_argument('--output_dir', type=str,default='{}/output_dir'.format(this_dir))
-    parser.add_argument('--year', choices=('2014', '2017'),default='2014')
-    parser.add_argument('--rect_thr', type=int, default=15)
-    parser.add_argument('--view', choices=('on', 'off'), default='off')
-    #parser.add_argument('--out_voc_dir',choices=('VOC2007','VOC2012'), default='VOC2007')
-    #parser.add_argument('--area',type=int,default=-1) #add annotation rect threshold
+    parser.add_argument('--input_dir',type=str,
+                        default='{}/input_dir'.format(this_dir),
+                        help='Downloaded data set directory')
+    parser.add_argument('--output_dir', type=str,
+                        default='{}/output_dir'.format(this_dir),
+                        help='Destination directory')
+    parser.add_argument('--year', choices=('2014', '2017'),default='2014',
+                        help='Designation of data set to be converted (in 2014 or in 2017)')
+    parser.add_argument('--rect_thr', type=int, default=15,
+                        help='Designation of minimum size of width and height of anonation rectangle')
+    parser.add_argument('--view', choices=('on', 'off'), default='off',
+                        help='Drawing to confirm the image')
+
     return parser.parse_args()
 
 def check_dataset(input_path,year):
@@ -89,7 +95,7 @@ def main():
         print('== output {} =='.format(set))
         anno = '{}/{}/instances_{}{}.json'.format(args.input_dir, annotations, set, args.year)
         img = '{}/{}/{}{}'.format(args.input_dir, images, set, args.year)
-        mscoco.mscoco_to_voc(anno,img,args.output_dir,set, args.rect_thr,args.view)
+        mscoco.mscoco_to_voc(anno,img,args.output_dir,set, args.rect_thr, args.view)
 
 if __name__ == '__main__':
     main()
