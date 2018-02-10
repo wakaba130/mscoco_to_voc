@@ -43,6 +43,7 @@ def argparser():
     parser.add_argument('anno_json',type=str)
     parser.add_argument('images_dir',type=str)
     parser.add_argument('output_dir', type=str)
+    parser.add_argument('--rect_thr', type=int, default=15)
     parser.add_argument('--view', choices=('on', 'off'), default='off')
     parser.add_argument('--out_voc_dir',choices=('VOC2007','VOC2012'), default='VOC2007')
     #parser.add_argument('--area',type=int,default=-1) #add annotation rect threshold
@@ -84,7 +85,19 @@ def view_annotation(img,rect_list,categories):
 
     return img
 
-def mscoco_to_voc(anno_json, img_dir, out_dir, sets, view='off'):
+def select_rect(rect, thr):
+    #print('select rect {}'.format(rect))
+    w = int(rect[2])
+    h = int(rect[3])
+
+    sflg = False
+    if w >= thr and h >= thr:
+        sflg = True
+
+    #print('select flg {}'.format(sflg))
+    return sflg
+
+def mscoco_to_voc(anno_json, img_dir, out_dir, sets, rect_thr=15, view='off'):
     print('-- check directry --')
 
     if not os.path.isdir(out_dir):
@@ -130,8 +143,10 @@ def mscoco_to_voc(anno_json, img_dir, out_dir, sets, view='off'):
                 # cate = category(categories,name['category_id'])
                 cate = select_category(categories, name['category_id'])
                 if cate is not None:
-                    rect_list.append({'id': id, 'category_id': name['category_id'], 'rect': name['bbox']})
-                    label_list.append(c_xml.LABEL(cate, 'Unspecified', 0, 0, name['bbox']))
+                    sflg = select_rect(name['bbox'], rect_thr)
+                    if sflg:
+                        rect_list.append({'id': id, 'category_id': name['category_id'], 'rect': name['bbox']})
+                        label_list.append(c_xml.LABEL(cate, 'Unspecified', 0, 0, name['bbox']))
 
         bar.update(count)
         count += 1
@@ -181,7 +196,8 @@ def main():
     print('__mscoco_to_PascalVOC__')
     args = argparser()
 
-    mscoco_to_voc(args.anno_json, args.images_dir, args.output_dir, args.sets, args.view)
+    mscoco_to_voc(args.anno_json, args.images_dir,
+                  args.output_dir, args.sets, args.rect_thr, args.view)
 
 if __name__ == '__main__':
     main()
