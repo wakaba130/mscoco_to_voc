@@ -51,6 +51,9 @@ def create_pascalVOC(in_dir_name,in_file_name, img_size,labels,output_file_name)
         truncated = ElementTree.SubElement(object, 'truncated')
         truncated.text = str(label.truncated)
 
+        difficult = ElementTree.SubElement(object, 'difficult')
+        difficult.text = str(0)
+
         bbox = ElementTree.SubElement(object, 'bndbox')
         xmin = ElementTree.SubElement(bbox, 'xmin')
         xmin.text = str(int(label.bndbox[0]))
