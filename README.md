@@ -12,11 +12,13 @@ chainercvは、０．６．０のバージョンのみ対応
 + OpenCV3.2.0
 + progressbar2
   + if you install `sudo pip3 install progressbar2`
++ wget3.2
+  + if you install `sudo pip3 install wget`
 
 ## install apt
 
 ```bash
-$ sudo apt-get install wget unzip
+$ sudo apt-get install unzip
 ```
 
 ## Execution method

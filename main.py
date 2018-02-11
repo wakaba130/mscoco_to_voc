@@ -4,6 +4,7 @@
 
 import os
 import sys
+import wget
 import argparse
 import subprocess
 from mscoco import mscoco
@@ -51,18 +52,22 @@ def check_dataset(input_path,year):
     if not os.path.isfile('{}/{}/instances_train{}.json'.format(input_path, annotations, year)):
         if not os.path.isfile('{}/annotations_trainval{}.zip'.format(input_path,year)):
             if year == '2014':
-                subprocess.check_call(['wget', '-c', anno_2014_url], cwd=input_full_path)
+                #subprocess.check_call(['wget', '-c', anno_2014_url], cwd=input_full_path)
+                wget.download(anno_2014_url,out=input_full_path)
             else:
-                subprocess.check_call(['wget', '-c', anno_2017_url], cwd=input_full_path)
+                #subprocess.check_call(['wget', '-c', anno_2017_url], cwd=input_full_path)
+                wget.download(anno_2017_url,out=input_full_path)
         subprocess.check_call(['unzip', '{}/annotations_trainval{}.zip'.format(input_path, year)], cwd=input_full_path)
 
     # check train data
     if not os.path.isdir('{}/{}/train{}'.format(input_full_path, images, year)):
         if not os.path.isfile('{}/train{}.zip'.format(input_full_path, year)):
             if year == '2014':
-                subprocess.check_call(['wget', '-c', train_2014_url], cwd=input_full_path)
+                #subprocess.check_call(['wget', '-c', train_2014_url], cwd=input_full_path)
+                wget.download(train_2014_url, out=input_full_path)
             else:
-                subprocess.check_call(['wget', '-c', train_2017_url], cwd=input_full_path)
+                #subprocess.check_call(['wget', '-c', train_2017_url], cwd=input_full_path)
+                wget.download(train_2017_url, out=input_full_path)
 
         if not os.path.isdir('{}/{}'.format(input_full_path, images)):
             os.mkdir('{}/{}'.format(input_full_path, images))
@@ -74,9 +79,11 @@ def check_dataset(input_path,year):
     if not os.path.isdir('{}/{}/val{}'.format(input_path, images, year)):
         if not os.path.isfile('{}/val{}.zip'.format(input_full_path, year)):
             if year == '2014':
-                subprocess.check_call(['wget', '-c', val_2014_url], cwd=input_full_path)
+                #subprocess.check_call(['wget', '-c', val_2014_url], cwd=input_full_path)
+                wget.download(val_2014_url, out=input_full_path)
             else:
-                subprocess.check_call(['wget', '-c', val_2017_url], cwd=input_full_path)
+                #subprocess.check_call(['wget', '-c', val_2017_url], cwd=input_full_path)
+                wget.download(val_2017_url, out=input_full_path)
 
         subprocess.check_call(
             ['unzip', '{}/val{}.zip'.format(input_full_path, year)],
