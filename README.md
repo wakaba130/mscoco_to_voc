@@ -1,29 +1,27 @@
 # mscoco_to_voc
 
-## Description
+## 本プログラムについて
 
 mscocoのデータセットのアノテーションのフォーマット（.json）をChainerCV用のPascal VOCのデータセットのフォーマット（.xml）に変換するコード
 chainercvは、０．６．０のバージョンのみ対応
 
-## Execution environment
+## 必要パッケージ
 
 + ubuntu 16.04 LTS
-+ python3.5.2
-+ OpenCV3.2.0
-+ progressbar2
-  + if you install `sudo pip3 install progressbar2`
-+ wget3.2
-  + if you install `sudo pip3 install wget`
++ python >= 3.5.2
++ OpenCV >= 3.2.0
 
-## install apt
+## install
 
-```bash
+```Shell
+$ sudo pip3 install progressbar2
+$ sudo pip3 install wget
 $ sudo apt-get install unzip
 ```
 
-## Execution method
+## 実行方法
 
-```bash
+```Shell
 $ python3 main.py --help
 usage: main.py [-h] [--input_dir INPUT_DIR] [--output_dir OUTPUT_DIR]
                [--year {2014,2017}] [--rect_thr RECT_THR] [--view {on,off}]
@@ -41,11 +39,11 @@ optional arguments:
   --view {on,off}       Drawing to confirm the image
 ```
 
-### Example) Execute no optional
+### 例) オプション指定なし
 
 ```bash
 python3 main.py
 ```
 
-+ The input directory is created directly under the project
-+ The output directory is created directly under the project
++ 入力データセットのディレクトリは、プロジェクト直下に作成されます
++ 出力ディレクトリは、プロジェクト直下に作成されます
