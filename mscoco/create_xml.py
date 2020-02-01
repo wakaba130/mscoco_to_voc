@@ -62,7 +62,7 @@ def create_pascalVOC(in_dir_name,in_file_name, img_size,labels,output_file_name)
         xmax = ElementTree.SubElement(bbox, 'xmax')
         xmax.text = str(int(label.bndbox[0] + label.bndbox[2]))
         ymax = ElementTree.SubElement(bbox, 'ymax')
-        ymax.text = str(int(label.bndbox[0] + label.bndbox[3]))
+        ymax.text = str(int(label.bndbox[1] + label.bndbox[3]))
 
     elm = prettify(top)
     with open(output_file_name,'w') as fp:
