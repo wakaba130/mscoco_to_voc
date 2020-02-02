@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="0b24ed31-9c0a-4bce-b662-6c40f453c54d" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mscoco/create_xml.py" beforeDir="false" afterPath="$PROJECT_DIR$/mscoco/create_xml.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mscoco/mscoco.py" beforeDir="false" afterPath="$PROJECT_DIR$/mscoco/mscoco.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -122,5 +121,11 @@
       <updated>1515324211111</updated>
     </task>
     <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="649" y="366" key="com.intellij.ide.util.TipDialog" timestamp="1580610622226">
+      <screen x="67" y="27" width="1853" height="1053" />
+    </state>
+    <state x="649" y="366" key="com.intellij.ide.util.TipDialog/1920.0.1920.1080/67.27.1853.1053@67.27.1853.1053" timestamp="1580610622226" />
   </component>
 </project>

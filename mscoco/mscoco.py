@@ -145,7 +145,7 @@ def mscoco_to_voc(anno_json, img_dir, out_dir, sets, rect_thr=15, view='off'):
                 if cate is not None:
                     sflg = select_rect(name['bbox'], rect_thr)
                     if sflg:
-                        print("id:{} bbox:{}".format(id, name['bbox']))
+                        #print("id:{} bbox:{}".format(id, name['bbox']))
                         rect_list.append({'id': id, 'category_id': name['category_id'], 'rect': name['bbox']})
                         label_list.append(c_xml.LABEL(cate, 'Unspecified', 0, 0, name['bbox']))
 
