@@ -3,6 +3,7 @@
 ##
 
 import os
+from os.path import join as os_join
 import sys
 import wget
 import argparse
@@ -49,19 +50,21 @@ def check_dataset(input_path,year):
     # check annotation file
     input_full_path = os.path.abspath(input_path)
     print('Full Path = {}'.format(input_full_path))
-    if not os.path.isfile('{}/{}/instances_train{}.json'.format(input_path, annotations, year)):
-        if not os.path.isfile('{}/annotations_trainval{}.zip'.format(input_path,year)):
+    if not os.path.isfile(os_join(input_path, '{}/instances_train{}.json'.format(annotations, year))):
+        if not os.path.isfile(os_join(input_path, 'annotations_trainval{}.zip'.format(year))):
             if year == '2014':
                 #subprocess.check_call(['wget', '-c', anno_2014_url], cwd=input_full_path)
                 wget.download(anno_2014_url,out=input_full_path)
             else:
                 #subprocess.check_call(['wget', '-c', anno_2017_url], cwd=input_full_path)
                 wget.download(anno_2017_url,out=input_full_path)
-        subprocess.check_call(['unzip', '{}/annotations_trainval{}.zip'.format(input_path, year)], cwd=input_full_path)
+        subprocess.check_call(['unzip', os_join(input_path, 'annotations_trainval{}.zip'.format(year))],
+                              cwd=input_full_path)
 
     # check train data
-    if not os.path.isdir('{}/{}/train{}'.format(input_full_path, images, year)):
-        if not os.path.isfile('{}/train{}.zip'.format(input_full_path, year)):
+    images_dir = os_join(input_full_path, images)
+    if not os.path.isdir(os_join(input_full_path, '{}/train{}'.format(images, year))):
+        if not os.path.isfile(os_join(input_full_path, 'train{}.zip'.format(year))):
             if year == '2014':
                 #subprocess.check_call(['wget', '-c', train_2014_url], cwd=input_full_path)
                 wget.download(train_2014_url, out=input_full_path)
@@ -69,15 +72,14 @@ def check_dataset(input_path,year):
                 #subprocess.check_call(['wget', '-c', train_2017_url], cwd=input_full_path)
                 wget.download(train_2017_url, out=input_full_path)
 
-        if not os.path.isdir('{}/{}'.format(input_full_path, images)):
-            os.mkdir('{}/{}'.format(input_full_path, images))
+        if not os.path.isdir(images_dir):
+            os.mkdir(images_dir)
         subprocess.check_call(
-            ['unzip', '{}/train{}.zip'.format(input_full_path, year)],
-            cwd='{}/{}'.format(input_full_path, images))
+            ['unzip', os_join(input_full_path, 'train{}.zip'.format(year))], cwd=images_dir)
 
     # check val data
-    if not os.path.isdir('{}/{}/val{}'.format(input_path, images, year)):
-        if not os.path.isfile('{}/val{}.zip'.format(input_full_path, year)):
+    if not os.path.isdir(os_join(input_path, '{}/val{}'.format(images, year))):
+        if not os.path.isfile(os_join(input_full_path, 'val{}.zip'.format(year))):
             if year == '2014':
                 #subprocess.check_call(['wget', '-c', val_2014_url], cwd=input_full_path)
                 wget.download(val_2014_url, out=input_full_path)
@@ -86,23 +88,22 @@ def check_dataset(input_path,year):
                 wget.download(val_2017_url, out=input_full_path)
 
         subprocess.check_call(
-            ['unzip', '{}/val{}.zip'.format(input_full_path, year)],
-            cwd='{}/{}'.format(input_full_path, images))
+            ['unzip', os_join(input_full_path, 'val{}.zip'.format(year))], cwd=images_dir)
 
 def main():
     args = argparser()
 
-    if os.path.isdir(args.output_dir):
-        print('Error : output dir is exist.')
-        sys.exit()
+    #if os.path.isdir(args.output_dir):
+    #    print('Error : output dir is exist.')
+    #    sys.exit()
 
     check_dataset(args.input_dir,args.year)
 
-    for set in ['train', 'val']:
-        print('== output {} =='.format(set))
-        anno = '{}/{}/instances_{}{}.json'.format(args.input_dir, annotations, set, args.year)
-        img = '{}/{}/{}{}'.format(args.input_dir, images, set, args.year)
-        mscoco.mscoco_to_voc(anno,img,args.output_dir,set, args.rect_thr, args.view)
+    for _set in ['train', 'val']:
+        print('== output {} =='.format(_set))
+        anno = os_join(args.input_dir, '{}/instances_{}{}.json'.format(annotations, _set, args.year))
+        img = os_join(args.input_dir, '{}/{}{}'.format(images, _set, args.year))
+        mscoco.mscoco_to_voc(anno, img, args.output_dir, _set, args.rect_thr, args.view)
 
 if __name__ == '__main__':
     main()

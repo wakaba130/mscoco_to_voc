@@ -156,7 +156,7 @@ def mscoco_to_voc(anno_json, img_dir, out_dir, sets, rect_thr=15, view='off'):
             sp_dir = img_dir.split('/')
             sp_dir_name = sp_dir[len(sp_dir) - 1]
 
-            base_name = 'COCO_{}_{:012d}'.format(sp_dir_name, id)
+            base_name = '{:07d}'.format(id)
             jpg_name = '{}.jpg'.format(base_name)
             img_name = '{}/{}'.format(img_dir, jpg_name)
             sp_img_name = os.path.split(img_name)
