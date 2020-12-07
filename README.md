@@ -2,10 +2,10 @@
 
 ## 本プログラムについて
 
-mscocoのデータセットのアノテーションのフォーマット（.json）をChainerCV用のPascal VOCのデータセットのフォーマット（.xml）に変換するコード
-chainercvは、０．６．０のバージョンのみ対応
+mscocoのデータセットのアノテーションのフォーマット（.json）を
+Pascal VOCのデータセットのフォーマット（.xml）に変換するコード
 
-## 必要パッケージ
+## 動作確認バージョン
 
 + ubuntu 16.04 LTS
 + python >= 3.5.2
@@ -21,10 +21,11 @@ $ sudo apt-get install unzip
 
 ## 実行方法
 
-```Shell
-$ python3 main.py --help
+```
+$python3 main.py --help
 usage: main.py [-h] [--input_dir INPUT_DIR] [--output_dir OUTPUT_DIR]
-               [--year {2014,2017}] [--rect_thr RECT_THR] [--view {on,off}]
+               [--year {2014,2017}] [--rect_thr RECT_THR]
+               [--name_length NAME_LENGTH] [--view {on,off}]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -36,8 +37,13 @@ optional arguments:
                         2017)
   --rect_thr RECT_THR   Designation of minimum size of width and height of
                         anonation rectangle
+  --name_length NAME_LENGTH
+                        File name size exp[000000000001.jpg = 12] default:12
   --view {on,off}       Drawing to confirm the image
 ```
+
+`--name_length`は、画像やXMLの名前の長さを入力します。`000000000001.jpg`の長さは拡張子を含まずに12桁に
+なるので、12と設定します。自作のデータセットを作成して、連番名の文字数を変更したときなどに指定してください。
 
 ### 例) オプション指定なし
 
