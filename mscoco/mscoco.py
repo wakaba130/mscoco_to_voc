@@ -97,7 +97,7 @@ def select_rect(rect, thr):
     #print('select flg {}'.format(sflg))
     return sflg
 
-def mscoco_to_voc(anno_json, img_dir, out_dir, sets, rect_thr=15, view='off'):
+def mscoco_to_voc(anno_json, img_dir, out_dir, sets, rect_thr=15, name_size=12, view='off'):
     print('-- check directry --')
 
     if not os.path.isdir(out_dir):
@@ -120,8 +120,8 @@ def mscoco_to_voc(anno_json, img_dir, out_dir, sets, rect_thr=15, view='off'):
     print('-- create index list --')
     image_id_list_buf = []
     for name in json_s['annotations']:
-        id = int(name['image_id'])
-        image_id_list_buf.append(id)
+        _id = int(name['image_id'])
+        image_id_list_buf.append(_id)
 
     image_id_list = list(set(image_id_list_buf))
     image_id_list.sort()
@@ -135,18 +135,18 @@ def mscoco_to_voc(anno_json, img_dir, out_dir, sets, rect_thr=15, view='off'):
     print('-- output xmls jpgs and imagesets --')
     count = 0
     name_list = []
-    for id in image_id_list:
+    for _id in image_id_list:
         rect_list = []
         label_list = []
         for name in json_s['annotations']:
-            if id == int(name['image_id']):
+            if _id == int(name['image_id']):
                 # cate = category(categories,name['category_id'])
                 cate = select_category(categories, name['category_id'])
                 if cate is not None:
                     sflg = select_rect(name['bbox'], rect_thr)
                     if sflg:
                         #print("id:{} bbox:{}".format(id, name['bbox']))
-                        rect_list.append({'id': id, 'category_id': name['category_id'], 'rect': name['bbox']})
+                        rect_list.append({'id': _id, 'category_id': name['category_id'], 'rect': name['bbox']})
                         label_list.append(c_xml.LABEL(cate, 'Unspecified', 0, 0, name['bbox']))
 
         bar.update(count)
@@ -156,7 +156,8 @@ def mscoco_to_voc(anno_json, img_dir, out_dir, sets, rect_thr=15, view='off'):
             sp_dir = img_dir.split('/')
             sp_dir_name = sp_dir[len(sp_dir) - 1]
 
-            base_name = '{:07d}'.format(id)
+            str_id = str(_id)
+            base_name = str_id.zfill(name_size)
             jpg_name = '{}.jpg'.format(base_name)
             img_name = '{}/{}'.format(img_dir, jpg_name)
             sp_img_name = os.path.split(img_name)

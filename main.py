@@ -37,6 +37,8 @@ def argparser():
                         help='Designation of data set to be converted (in 2014 or in 2017)')
     parser.add_argument('--rect_thr', type=int, default=15,
                         help='Designation of minimum size of width and height of anonation rectangle')
+    parser.add_argument('--name_length', type=int, default=12,
+                        help='File name size exp[000000000001.jpg = 12] default:12')
     parser.add_argument('--view', choices=('on', 'off'), default='off',
                         help='Drawing to confirm the image')
 
@@ -103,7 +105,8 @@ def main():
         print('== output {} =='.format(_set))
         anno = os_join(args.input_dir, '{}/instances_{}{}.json'.format(annotations, _set, args.year))
         img = os_join(args.input_dir, '{}/{}{}'.format(images, _set, args.year))
-        mscoco.mscoco_to_voc(anno, img, args.output_dir, _set, args.rect_thr, args.view)
+        mscoco.mscoco_to_voc(anno, img, args.output_dir, _set,
+                             rect_thr=args.rect_thr, name_size=args.name_length, view=args.view)
 
 if __name__ == '__main__':
     main()
