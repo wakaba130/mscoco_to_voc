@@ -156,14 +156,15 @@ def mscoco_to_voc(anno_json, img_dir, out_dir, sets, rect_thr=15, name_size=12, 
             sp_dir = img_dir.split('/')
             sp_dir_name = sp_dir[len(sp_dir) - 1]
 
-            jpg_name = [obj['file_name'] for obj in json_s['images'] if obj['id'] == _id]
+            buf_jpg_name = [obj['file_name'] for obj in json_s['images'] if obj['id'] == _id]
 
-            if len(jpg_name) <= 0:
+            if len(buf_jpg_name) <= 0:
                 str_id = str(_id)
                 base_name = str_id.zfill(name_size)
                 jpg_name = '{}.jpg'.format(base_name)
             else:
-                base_name = jpg_name[0].replace('.jpg', '')
+                jpg_name = buf_jpg_name[0]
+                base_name = jpg_name.replace('.jpg', '')
 
             img_name = '{}/{}'.format(img_dir, jpg_name)
             sp_img_name = os.path.split(img_name)
