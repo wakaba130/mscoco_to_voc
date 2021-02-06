@@ -41,10 +41,12 @@ def argparser():
                         help='File name size exp[000000000001.jpg = 12] default:12')
     parser.add_argument('--view', choices=('on', 'off'), default='off',
                         help='Drawing to confirm the image')
+    parser.add_argument('--test_set', choices=('val', 'test'), default='val',
+                        help='choices testset val or test')
 
     return parser.parse_args()
 
-def check_dataset(input_path,year):
+def check_dataset(input_path,year, test_set):
     # check dataset dir
     if not os.path.isdir('{}'.format(input_path)):
         os.makedirs(input_path)
@@ -80,17 +82,18 @@ def check_dataset(input_path,year):
             ['unzip', os_join(input_full_path, 'train{}.zip'.format(year))], cwd=images_dir)
 
     # check val data
-    if not os.path.isdir(os_join(input_path, '{}/val{}'.format(images, year))):
-        if not os.path.isfile(os_join(input_full_path, 'val{}.zip'.format(year))):
-            if year == '2014':
-                #subprocess.check_call(['wget', '-c', val_2014_url], cwd=input_full_path)
-                wget.download(val_2014_url, out=input_full_path)
-            else:
-                #subprocess.check_call(['wget', '-c', val_2017_url], cwd=input_full_path)
-                wget.download(val_2017_url, out=input_full_path)
+    if test_set == 'val':
+        if not os.path.isdir(os_join(input_path, '{}/{}{}'.format(images, test_set, year))):
+            if not os.path.isfile(os_join(input_full_path, '{}{}.zip'.format(test_set, year))):
+                if year == '2014':
+                    #subprocess.check_call(['wget', '-c', val_2014_url], cwd=input_full_path)
+                    wget.download(val_2014_url, out=input_full_path)
+                else:
+                    #subprocess.check_call(['wget', '-c', val_2017_url], cwd=input_full_path)
+                    wget.download(val_2017_url, out=input_full_path)
 
-        subprocess.check_call(
-            ['unzip', os_join(input_full_path, 'val{}.zip'.format(year))], cwd=images_dir)
+            subprocess.check_call(
+                ['unzip', os_join(input_full_path, '{}{}.zip'.format(test_set, year))], cwd=images_dir)
 
 def main():
     args = argparser()
@@ -99,9 +102,9 @@ def main():
     #    print('Error : output dir is exist.')
     #    sys.exit()
 
-    check_dataset(args.input_dir,args.year)
+    check_dataset(args.input_dir,args.year, args.test_set)
 
-    for _set in ['train', 'val']:
+    for _set in ['train', args.test_set]:
         print('== output {} =='.format(_set))
         anno = os_join(args.input_dir, '{}/instances_{}{}.json'.format(annotations, _set, args.year))
         img = os_join(args.input_dir, '{}/{}{}'.format(images, _set, args.year))
